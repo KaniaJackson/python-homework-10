@@ -1,0 +1,245 @@
+1.def generate_amortization_report():
+    
+    filename = input("Enter the filename to save the amortization report (e.g., report.txt): ")
+    
+    
+    try:
+        principal = float(input("Enter loan amount: $"))
+        annual_rate = float(input("Enter annual interest rate (e.g., 5 for 5%): ")) / 100
+        years = int(input("Enter loan term in years: "))
+    except ValueError:
+        print("Invalid input numerical values required.")
+        return
+
+    monthly_rate = annual_rate / 12
+    months = years * 12
+    monthly_payment = principal * (monthly_rate * (1 + monthly_rate)**months) / ((1 + monthly_rate)**months - 1)
+
+   
+    with open(filename, 'w') as file:
+        file.write(f"Amortization Report\n")
+        file.write(f"{'='*40}\n")
+        file.write(f"Principal: ${principal:,.2f}\n")
+        file.write(f"Annual Interest Rate: {annual_rate*100}%\n")
+        file.write(f"Monthly Payment: ${monthly_payment:,.2f}\n\n")
+        file.write(f"{'Month':<8}{'Payment':<12}{'Interest':<12}{'Principal':<12}{'Balance':<12}\n")
+        file.write(f"{'-'*56}\n")
+        
+        balance = principal
+        for month in range(1, months + 1):
+            interest_paid = balance * monthly_rate
+            principal_paid = monthly_payment - interest_paid
+            balance -= principal_paid
+            
+            if balance < 0: 
+                balance = 0
+                
+            file.write(f"{month:<8}${monthly_payment:<11.2f}${interest_paid:<11.2f}${principal_paid:<11.2f}${balance:<11.2f}\n")
+            
+    print(f"Success! Report successfully saved to '{filename}'.")
+
+if __name__ == "__main__":
+    generate_amortization_report()
+2.import ast
+
+def load_cipher_config(filename):
+    with open(filename, 'r') as file:
+        lines = [line.strip() for line in file if line.strip()]
+    
+    
+    grid_size = tuple(map(int, lines[0].split(',')))
+    
+   
+    path = []
+    for line in lines[1:]:
+     
+        coords = tuple(map(int, line.split(',')))
+        path.append(coords)
+        
+    return grid_size, path
+
+def encipher_message(message, grid_size, path):
+   
+    shifted = []
+    for i, char in enumerate(message):
+        if char.isalpha():
+            offset = path[i % len(path)][0] + path[i % len(path)][1]
+            base = ord('A') if char.isupper() else ord('a')
+            shifted.append(chr((ord(char) - base + offset) % 26 + base))
+        else:
+            shifted.append(char)
+    return "".join(shifted)
+
+def decipher_message(cipher_text, grid_size, path):
+    shifted = []
+    for i, char in enumerate(cipher_text):
+        if char.isalpha():
+            offset = path[i % len(path)][0] + path[i % len(path)][1]
+            base = ord('A') if char.isupper() else ord('a')
+            shifted.append(chr((ord(char) - base - offset) % 26 + base))
+        else:
+            shifted.append(char)
+    return "".join(shifted)
+
+def main():
+    filename = input("Enter path configuration filename: ")
+    try:
+        grid_size, path = load_cipher_config(filename)
+        msg = input("Enter secret message to encipher: ")
+        
+        encrypted = encipher_message(msg, grid_size, path)
+        decrypted = decipher_message(encrypted, grid_size, path)
+        
+        print(f"\nGrid Size: {grid_size}")
+        print(f"Encrypted message: {encrypted}")
+        print(f"Decrypted message: {decrypted}")
+    except FileNotFoundError:
+        print("File not found. Please verify the filename and try again.")
+
+if __name__ == "__main__":
+    main()
+3.def generate_frequency_graph():
+    filename = input("Enter the filename of the text file to analyze: ")
+    
+    counts = {chr(i): 0 for i in range(ord('A'), ord('Z') + 1)}
+    total_letters = 0
+    
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            for line in file:
+                for char in line.upper():
+                    if 'A' <= char <= 'Z':
+                        counts[char] += 1
+                        total_letters += 1
+    except FileNotFoundError:
+        print("File not found.")
+        return
+
+    if total_letters == 0:
+        print("No alphabetic characters found in file.")
+        return
+
+  
+    ratios = {letter: (count / total_letters) * 100 for letter, count in counts.items()}
+    max_ratio = max(ratios.values()) # Used for scaling graph limit
+
+    print(f"\nFrequency Analysis Graph (Scaled to max: {max_ratio:.2f}%)")
+    print(f"{'='*50}")
+    
+ 
+    for letter in sorted(ratios.keys()):
+        percentage = ratios[letter]
+      
+        bar_length = int((percentage / max_ratio) * 40) if max_ratio > 0 else 0
+        bar = '*' * bar_length
+        print(f" {letter} : {bar:<40} ({percentage:.2f}%)")
+
+if __name__ == "__main__":
+    generate_frequency_graph()
+4.import os
+
+def analyze_python_directory():
+    directory = input("Enter directory path to scan for Python code: ")
+    counts = {chr(i): 0 for i in range(ord('A'), ord('Z') + 1)}
+    total_letters = 0
+    
+    if not os.path.isdir(directory):
+        print("Invalid directory pathway.")
+        return
+
+    
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.py'):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        for line in f:
+                            for char in line.upper():
+                                if 'A' <= char <= 'Z':
+                                    counts[char] += 1
+                                    total_letters += 1
+                except Exception:
+                    continue 
+
+    if total_letters == 0:
+        print("No active python files or alphabetic code found inside folder.")
+        return
+
+    ratios = {letter: (count / total_letters) * 100 for letter, count in counts.items()}
+    max_ratio = max(ratios.values())
+
+    print(f"\nPython Code Base Profile Graph (Max Bound: {max_ratio:.2f}%)")
+    print(f"{'='*50}")
+    for letter in sorted(ratios.keys()):
+        percentage = ratios[letter]
+        bar_length = int((percentage / max_ratio) * 40) if max_ratio > 0 else 0
+        print(f" {letter} : {'*' * bar_length:<40} ({percentage:.2f}%)")
+
+if __name__ == "__main__":
+    analyze_python_directory()
+5.import urllib.request
+
+def analyze_web_text():
+    url = input("Enter Project Gutenberg text URL (or hit enter for Shakespeare): ")
+    if not url.strip():
+        url = "https://gutenberg.org/cache/epub/100/pg100.txt"
+        
+    print(f"Downloading text from: {url}... Please hold.")
+    
+  
+    buckets = [0] * 256
+    total_alpha_count = 0
+
+    try:
+      
+        with urllib.request.urlopen(url) as response:
+          
+            for line in response:
+                decoded_line = line.decode('utf-8', errors='ignore')
+                for char in decoded_line:
+                    val = ord(char)
+                    if val < 256:  # Strict filter step targeting lower 256 ordinals
+                        buckets[val] += 1
+                        if 'A' <= char.upper() <= 'Z':
+                            total_alpha_count += 1
+    except Exception as e:
+        print(f"Error fetching data from the web: {e}")
+        return
+
+    
+    print("\n--- Letter Frequency Chart Generated ---")
+    alpha_counts = {}
+    for i in range(256):
+        char = chr(i).upper()
+        if 'A' <= char <= 'Z':
+            alpha_counts[char] = alpha_counts.get(char, 0) + buckets[i]
+            
+    if total_alpha_count > 0:
+        max_alpha = max(alpha_counts.values())
+        for letter in sorted(alpha_counts.keys()):
+            pct = (alpha_counts[letter] / total_alpha_count) * 100
+            bar = '*' * int((alpha_counts[letter] / max_alpha) * 40) if max_alpha > 0 else 0
+            print(f" {letter} : {bar:<40} ({pct:.2f}%)")
+
+   
+    out_filename = input("\nEnter output filename to save data (e.g., counts.txt): ")
+    with open(out_filename, 'w', encoding='utf-8') as out_file:
+        out_file.write("Character,OccurrenceCount,OrdinalValue\n")
+        for i in range(256):
+            if buckets[i] > 0:
+                
+                char_representation = chr(i)
+                if i == 10: char_representation = "\\n"
+                elif i == 13: char_representation = "\\r"
+                elif i == 32: char_representation = "SPACE"
+                
+                out_file.write(f"'{char_representation}',{buckets[i]},{i}\n")
+                
+    print(f"Frequency metric tracking raw results cleanly saved to '{out_filename}'.")
+
+if __name__ == "__main__":
+    analyze_web_text()
+
+
+
